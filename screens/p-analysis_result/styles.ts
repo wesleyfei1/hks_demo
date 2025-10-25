@@ -33,4 +33,10 @@ export default StyleSheet.create({
   saveButtonText: { color: '#fff', fontWeight: '600' },
   cancelButton: { paddingVertical: 10, paddingHorizontal: 14, backgroundColor: '#f3f4f6', borderRadius: 8, marginLeft: 8 },
   cancelButtonText: { color: '#374151', fontWeight: '600' }
+  ,
+  suggestionCard: { marginBottom: 12, borderWidth: 1, borderColor: '#eef2ff', padding: 10, borderRadius: 8 },
+  suggestionTitle: { fontWeight: '600' },
+  suggestionReason: { color: '#6b7280', marginBottom: 8 },
+  thumb: { width: 120, height: 80, marginRight: 8, borderRadius: 6, backgroundColor: '#f3f4f6' },
+  generateButton: { paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#6366f1', borderRadius: 8 }
 });

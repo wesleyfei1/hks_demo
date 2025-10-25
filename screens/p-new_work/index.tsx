@@ -1,7 +1,7 @@
 
 
 import { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, KeyboardAvoidingView, Platform, } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Modal, Alert, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { FontAwesome6 } from '@expo/vector-icons';
@@ -167,28 +167,60 @@ const NewWorkScreen = () => {
         const raw = await AsyncStorage.getItem('@advanced_settings');
         const settings = raw ? JSON.parse(raw) : null;
 
+        // build payload with both camelCase and snake_case keys so bridge server
+        // (which accepts either) can map them reliably to backend scripts
         const payload: any = { text: textToAnalyze };
         if (settings && settings.useAiApi) {
-          if (settings.apiKey) payload.api_key = settings.apiKey;
-          if (settings.apiUrl) payload.api_url = settings.apiUrl;
-          if (settings.model) payload.model = settings.model;
-          if (settings.provider) payload.provider = settings.provider;
+          const k = settings.apiKey || '';
+          const u = settings.apiUrl || '';
+          const m = settings.model || '';
+          const p = settings.provider || settings.providerName || '';
+
+          // snake_case
+          if (k) payload.api_key = k;
+          if (u) payload.api_url = u;
+          if (m) payload.model = m;
+          if (p) payload.provider = p;
+
+          // camelCase
+          if (k) payload.apiKey = k;
+          if (u) payload.apiUrl = u;
+          if (m) payload.model = m; // same key name for model
+          if (p) payload.provider = p;
         }
+
+        // Helpful debug log so developer can see exactly what is forwarded
+        console.log('[callLocalAnalyze] payload ->', payload);
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 8000);
-        const res = await fetch('http://127.0.0.1:8000/analyze', {
+        // When running in development, prefer simulate mode for faster, deterministic responses
+        const simulateQuery = typeof __DEV__ !== 'undefined' && __DEV__ ? '?simulate=1' : '';
+        const res = await fetch(`http://127.0.0.1:8000/analyze${simulateQuery}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload),
           signal: controller.signal as any
         });
         clearTimeout(timeout);
-        if (!res.ok) throw new Error('local backend non-200');
+        if (!res.ok) {
+          const textErr = await res.text();
+          console.warn('[callLocalAnalyze] local backend returned non-200', res.status, textErr);
+          throw new Error(`local backend ${res.status}`);
+        }
+
         const j = await res.json();
-        if (j && j.ok && j.result) {
+        // bridge server typically returns { ok: true, result: {...} }
+        if (j && (j.ok === true) && j.result) {
           return j.result;
         }
+
+        // if bridge returned files (image flow) or other shapes, return raw
+        if (j && (j.ok === true) && (j.files || j.url)) {
+          return j;
+        }
+
+        console.warn('[callLocalAnalyze] unexpected local backend response', j);
         throw new Error('invalid local backend response');
       } catch (e) {
         console.warn('本地后端不可用或超时，回退到前端/外部 API', e);
@@ -224,7 +256,7 @@ const NewWorkScreen = () => {
       const userPrompt = `用户文本：\n${text}`;
 
       // If external API configured, prefer that
-      if (settings && settings.useAiApi && settings.apiKey) {
+  if (settings && settings.useAiApi && settings.apiKey) {
         const apiUrl = settings.apiUrl?.trim() || 'https://api.openai.com/v1/chat/completions';
         const model = settings.model || 'gpt-4';
 
@@ -260,7 +292,7 @@ const NewWorkScreen = () => {
         const requestUrl = normalizeApiUrl(apiUrl);
         console.log('AI 请求 URL:', requestUrl);
 
-        try {
+          try {
           const res = await fetch(requestUrl, {
             method: 'POST',
             headers: {
@@ -274,15 +306,16 @@ const NewWorkScreen = () => {
             const textErr = await res.text();
             console.warn('AI 服务返回非200，回退到模拟分析', res.status, textErr);
             let parsedErr: any = null;
-            try {
-              parsedErr = JSON.parse(textErr);
-            } catch (e) {}
+            try { parsedErr = JSON.parse(textErr); } catch (e) { parsedErr = null; }
 
-            if (parsedErr && (parsedErr.code === 20012 || /模型不存在/i.test(parsedErr.message || ''))) {
+            // If provider returned balance/model errors, surface clearer message
+            if (parsedErr && (parsedErr.code === 30011 || /paid balance|balance is insufficient|requires paid/i.test(parsedErr.message || ''))) {
+              Alert.alert('AI 服务拒绝（需付费）', `${parsedErr.message || '所选模型需要付费或余额不足，请充值或更换模型/Key。'}`);
+            } else if (parsedErr && (parsedErr.code === 20012 || /模型不存在/i.test(parsedErr.message || ''))) {
               const availableModels = [
-                'Qwen/QwQ-32B', 'Qwen/Qwen2.5-72B-Instruct', 'deepseek-ai/DeepSeek-V3', 'Pro/deepseek-ai/DeepSeek-V3.1', 'Qwen/Qwen3-30B-A3B'
+                'Qwen/QwQ-32B', 'Qwen/Qwen2.5-72B-Instruct', 'deepseek-ai/DeepSeek-V3'
               ];
-              Alert.alert('模型不存在', `${parsedErr.message || '模型不存在，请检查模型名称。'}\n\n请在设置 -> 高级选项中将模型字段设置为以下之一（示例）：\n${availableModels.join('\n')}`);
+              Alert.alert('模型不存在', `${parsedErr.message || '模型不存在，请检查模型名称。'}\n\n请在设置 -> 高级选项中将模型字段改为：\n${availableModels.join('\n')}`);
             } else {
               Alert.alert('⚠️ AI 服务不可用', 'AI 服务响应异常，已使用基于你文本片段的降级模拟分析。');
             }
@@ -386,11 +419,24 @@ const NewWorkScreen = () => {
         const settings = rawSettings ? JSON.parse(rawSettings) : null;
         const payload: any = { prompt };
         if (settings && settings.useAiApi) {
-          if (settings.imageApiKey) payload.image_api_key = settings.imageApiKey;
-          if (settings.imageApiUrl) payload.image_api_url = settings.imageApiUrl;
-          if (settings.imageModel) payload.image_model = settings.imageModel;
-          if (settings.imageSize) payload.image_size = settings.imageSize;
+          const k = settings.imageApiKey || '';
+          const u = settings.imageApiUrl || '';
+          const m = settings.imageModel || '';
+          const s = settings.imageSize || '';
+
+          // snake_case
+          if (k) payload.image_api_key = k;
+          if (u) payload.image_api_url = u;
+          if (m) payload.image_model = m;
+          if (s) payload.image_size = s;
+          // camelCase
+          if (k) payload.imageApiKey = k;
+          if (u) payload.imageApiUrl = u;
+          if (m) payload.imageModel = m;
+          if (s) payload.imageSize = s;
         }
+
+        console.log('[generateIllustrationWithModel] payload ->', payload);
 
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 10000);
@@ -404,7 +450,16 @@ const NewWorkScreen = () => {
         if (res.ok) {
           const j = await res.json();
           if (j.ok && j.files) {
-            return { url: '', files: j.files, raw: j };
+            // bridge may return filenames; map them to accessible static URLs
+            const files = Array.isArray(j.files) ? j.files : [];
+            const mapped = files.map((f: string) => {
+              if (!f) return f;
+              if (/^https?:\/\//i.test(f)) return f;
+              // if f contains generated_images path already, use as-is relative
+              const name = f.split(/[\\/]/).pop();
+              return `http://127.0.0.1:8000/static/generated_images/${name}`;
+            });
+            return { url: '', files: mapped, raw: j };
           }
           if (j.ok && j.url) {
             return { url: j.url, raw: j };
@@ -517,33 +572,23 @@ const NewWorkScreen = () => {
 
   // 检查是否有未完成的草稿
   useEffect(() => {
+    // auto-restore saved draft silently on open
     const checkDraft = async () => {
       try {
         const savedDraft = await AsyncStorage.getItem('@new_work_draft');
         if (savedDraft) {
           const draft: WorkData = JSON.parse(savedDraft);
-          Alert.alert(
-            '检测到草稿',
-            '是否恢复未完成的草稿？',
-            [
-              { text: '取消', style: 'cancel' },
-              {
-                text: '恢复',
-                onPress: () => {
-                  setStoryTitle(draft.title || '');
-                  setAuthorName(draft.author || '');
-                  setStoryContent(draft.content || '');
-                  showToast('草稿已恢复');
-                }
-              }
-            ]
-          );
+          setStoryTitle(draft.title || '');
+          setAuthorName(draft.author || '');
+          setStoryContent(draft.content || '');
+          setHasUnsavedChanges(false);
+          setSaveStatus('已保存');
         }
       } catch (error) {
         console.error('检查草稿失败:', error);
       }
     };
-    
+
     checkDraft();
   }, []);
 
@@ -917,13 +962,13 @@ const NewWorkScreen = () => {
           animationType="fade"
         >
           <View style={styles.modalOverlay}>
-            <View style={styles.loadingModal}>
-              <View style={styles.loadingSpinner} />
-              <Text style={styles.loadingTitle}>AI正在分析你的故事...</Text>
-              <Text style={styles.loadingMessage}>
-                这可能需要几分钟时间，请耐心等待
-              </Text>
-            </View>
+                <View style={styles.loadingModal}>
+                  <ActivityIndicator size="large" color="#6366f1" style={{ marginBottom: 12 }} />
+                  <Text style={styles.loadingTitle}>AI正在分析你的故事...</Text>
+                  <Text style={styles.loadingMessage}>
+                    这可能需要几分钟时间，请耐心等待
+                  </Text>
+                </View>
           </View>
         </Modal>
 
