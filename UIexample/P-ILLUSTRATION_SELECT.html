@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画叙 - 插图选择</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        tertiary: '#06b6d4',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        'text-primary': '#1f2937',
+                        'text-secondary': '#6b7280',
+                        'bg-light': '#f8fafc',
+                        'border-light': '#e5e7eb'
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                        'selected': '0 0 0 3px rgba(99, 102, 241, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .illustration-card {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .illustration-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .illustration-card.selected {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
+        }
+        
+        .illustration-scroll {
+            scroll-behavior: smooth;
+        }
+        
+        .illustration-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .illustration-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5855eb 0%, #7c3aed 100%);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-secondary:hover {
+            background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+            transform: translateY(-1px);
+        }
+        
+        .text-highlight {
+            background: linear-gradient(120deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+            background-repeat: no-repeat;
+            background-size: 100% 0.5em;
+            background-position: 0 88%;
+            padding: 0 2px;
+        }
+        
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans">
+    <!-- 状态栏 -->
+    <div id="status-bar" class="bg-white safe-top">
+        <div class="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-900">
+            <span>9:41</span>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-container" class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header id="top-header" class="bg-gradient-to-r from-primary to-secondary text-white sticky top-0 z-30 shadow-md">
+            <div class="flex items-center justify-between px-4 py-4">
+                <button id="back-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                
+                <div id="header-title" class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-image text-primary text-sm"></i>
+                    </div>
+                    <h1 class="text-lg font-bold">选择插图</h1>
+                </div>
+                
+                <button id="skip-btn" class="bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-white/30 transition-colors">
+                    跳过
+                </button>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main id="main-content" class="px-4 py-6 space-y-6">
+            <!-- 断点提示 -->
+            <div id="breakpoint-indicator" class="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-4 border border-blue-100">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white mr-3">
+                        <i class="fas fa-magic text-sm"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-text-primary mb-1">智能插图生成</h3>
+                        <p class="text-xs text-text-secondary">为故事中的精彩片段生成插图</p>
+                    </div>
+                    <div class="text-xs text-primary font-medium">
+                        <span id="current-location">1</span>/<span id="total-locations">3</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 当前文本段落预览 -->
+            <div id="text-preview-section" class="bg-white rounded-2xl shadow-card p-5 fade-in">
+                <h3 class="text-lg font-semibold text-text-primary mb-3 flex items-center">
+                    <i class="fas fa-quote-left text-primary mr-2"></i>
+                    当前段落
+                </h3>
+                <div id="current-paragraph" class="text-text-secondary leading-relaxed">
+                    <p>在一个宁静的夜晚，<span class="text-highlight font-medium text-text-primary">小女孩莉莉发现了一个隐藏在森林深处的神秘花园</span>。每当月光洒下时，花园里的花朵就会发出柔和的光芒，仿佛有无数颗星星落在了花瓣上...</p>
+                </div>
+                
+                <!-- 上下文联系信息 -->
+                <div id="context-info" class="mt-4 pt-4 border-t border-border-light">
+                    <h4 class="text-sm font-medium text-text-primary mb-2">AI分析：</h4>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">画面感强</span>
+                        <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">关键场景</span>
+                        <span class="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">情感丰富</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 候选插图展示区 -->
+            <div id="illustration-section" class="bg-white rounded-2xl shadow-card p-5 fade-in">
+                <h3 class="text-lg font-semibold text-text-primary mb-4 flex items-center">
+                    <i class="fas fa-images text-primary mr-2"></i>
+                    候选插图
+                </h3>
+                
+                <!-- 插图滚动区域 -->
+                <div id="illustration-scroll-container" class="relative mb-4">
+                    <div id="illustration-scroll" class="flex space-x-4 overflow-x-auto illustration-scroll pb-2">
+                        <!-- 插图卡片 1 -->
+                        <div id="illustration-1" class="illustration-card flex-shrink-0 w-48 bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer" data-illustration-id="1">
+                            <div class="aspect-square relative">
+                                <img src="https://s.coze.cn/image/v-wVquB8pJs/" 
+                                     alt="月光下的神秘花园，小女孩站在发光的花朵中间" 
+                                     data-category="自然风景"
+                                     class="w-full h-full object-cover">
+                                <div class="absolute top-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded-full">
+                                    推荐
+                                </div>
+                            </div>
+                            <div class="p-3">
+                                <p class="text-xs text-text-secondary mb-2">月光花园</p>
+                                <button class="select-illustration-btn w-full bg-primary text-white text-xs py-1.5 rounded-lg font-medium hover:bg-primary/90 transition-colors" data-illustration-id="1">
+                                    选择此图
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 插图卡片 2 -->
+                        <div id="illustration-2" class="illustration-card flex-shrink-0 w-48 bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer" data-illustration-id="2">
+                            <div class="aspect-square relative">
+                                <img src="https://s.coze.cn/image/7ZpYEoNxpCM/" 
+                                     alt="森林深处的花园，月光透过树叶洒在花朵上" 
+                                     data-category="自然风景"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-3">
+                                <p class="text-xs text-text-secondary mb-2">森林秘境</p>
+                                <button class="select-illustration-btn w-full bg-primary text-white text-xs py-1.5 rounded-lg font-medium hover:bg-primary/90 transition-colors" data-illustration-id="2">
+                                    选择此图
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 插图卡片 3 -->
+                        <div id="illustration-3" class="illustration-card flex-shrink-0 w-48 bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer" data-illustration-id="3">
+                            <div class="aspect-square relative">
+                                <img src="https://s.coze.cn/image/LNo1XTWT3_k/" 
+                                     alt="夜晚的花园，花朵发出柔和的光芒，小女孩惊讶地看着" 
+                                     data-category="人物"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-3">
+                                <p class="text-xs text-text-secondary mb-2">奇幻时刻</p>
+                                <button class="select-illustration-btn w-full bg-primary text-white text-xs py-1.5 rounded-lg font-medium hover:bg-primary/90 transition-colors" data-illustration-id="3">
+                                    选择此图
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 插图卡片 4 -->
+                        <div id="illustration-4" class="illustration-card flex-shrink-0 w-48 bg-white border-2 border-gray-200 rounded-xl overflow-hidden cursor-pointer" data-illustration-id="4">
+                            <div class="aspect-square relative">
+                                <img src="https://s.coze.cn/image/UEMsGoIoIqo/" 
+                                     alt="神秘的花园入口，月光照亮了蜿蜒的小路" 
+                                     data-category="建筑城市"
+                                     class="w-full h-full object-cover">
+                            </div>
+                            <div class="p-3">
+                                <p class="text-xs text-text-secondary mb-2">花园入口</p>
+                                <button class="select-illustration-btn w-full bg-primary text-white text-xs py-1.5 rounded-lg font-medium hover:bg-primary/90 transition-colors" data-illustration-id="4">
+                                    选择此图
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 滚动指示器 -->
+                    <div id="scroll-indicators" class="flex justify-center space-x-2 mt-3">
+                        <div class="w-2 h-2 bg-primary rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                        <div class="w-2 h-2 bg-gray-300 rounded-full"></div>
+                    </div>
+                </div>
+
+                <!-- 插图操作按钮 -->
+                <div id="illustration-actions" class="flex space-x-3">
+                    <button id="regenerate-btn" class="flex-1 btn-secondary text-text-primary py-3 rounded-xl font-medium flex items-center justify-center">
+                        <i class="fas fa-sync-alt mr-2"></i>重新生成
+                    </button>
+                    <button id="abandon-btn" class="flex-1 bg-gray-100 text-text-secondary py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-times mr-2"></i>放弃此处插图
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部操作区域 -->
+            <div id="bottom-actions" class="space-y-3 pb-6">
+                <button id="confirm-selection-btn" class="w-full btn-primary text-white py-4 rounded-xl font-semibold text-lg shadow-lg" disabled>
+                    <i class="fas fa-check mr-2"></i>确认选择
+                </button>
+                
+                <div class="flex space-x-3">
+                    <button id="previous-btn" class="flex-1 bg-gray-100 text-text-secondary py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors" disabled>
+                        <i class="fas fa-arrow-left mr-2"></i>上一个
+                    </button>
+                    <button id="next-btn" class="flex-1 bg-gray-100 text-text-secondary py-3 rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                        下一个<i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 加载遮罩 -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl p-8 text-center">
+            <div class="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <h3 class="text-lg font-semibold text-text-primary mb-2">正在生成插图...</h3>
+            <p class="text-sm text-text-secondary">AI正在为您创作独特的插图</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 解析URL参数
+            function getUrlParams() {
+                const params = {};
+                const queryString = window.location.search.substring(1);
+                const urlParams = new URLSearchParams(queryString);
+                
+                for(const [key, value] of urlParams.entries()) {
+                    params[key] = value;
+                }
+                return params;
+            }
+
+            // 获取URL参数
+            const params = getUrlParams();
+            const workId = params.workId || 'work_001';
+            const locationId = params.locationId || 'location_001';
+
+            // 模拟插图定位点数据
+            const illustrationLocations = [
+                {
+                    id: 'location_001',
+                    text: '在一个宁静的夜晚，小女孩莉莉发现了一个隐藏在森林深处的神秘花园。每当月光洒下时，花园里的花朵就会发出柔和的光芒，仿佛有无数颗星星落在了花瓣上...',
+                    type: '画面感强',
+                    status: '待选择'
+                },
+                {
+                    id: 'location_002',
+                    text: '突然，花园中央的一朵金色玫瑰开始发光，一个小精灵从花蕊中飞了出来，对莉莉说："欢迎来到月光花园，勇敢的小访客..."',
+                    type: '高潮',
+                    status: '待选择'
+                },
+                {
+                    id: 'location_003',
+                    text: '莉莉和小精灵成为了好朋友，每个月圆之夜，她都会来到这个神秘花园，与小精灵一起探索花园的秘密，度过一个又一个神奇的夜晚...',
+                    type: '结局',
+                    status: '待选择'
+                }
+            ];
+
+            let currentLocationIndex = 0;
+            let selectedIllustrationId = null;
+
+            // 更新当前位置信息
+            function updateCurrentLocation() {
+                const currentLocation = illustrationLocations[currentLocationIndex];
+                
+                // 更新段落文本
+                document.querySelector('#current-paragraph p').innerHTML = currentLocation.text.replace(
+                    /(小女孩莉莉发现了一个隐藏在森林深处的神秘花园|一个小精灵从花蕊中飞了出来|莉莉和小精灵成为了好朋友)/,
+                    '<span class="text-highlight font-medium text-text-primary">$1</span>'
+                );
+                
+                // 更新进度
+                document.querySelector('#current-location').textContent = currentLocationIndex + 1;
+                document.querySelector('#total-locations').textContent = illustrationLocations.length;
+                
+                // 更新按钮状态
+                updateButtonStates();
+            }
+
+            // 更新按钮状态
+            function updateButtonStates() {
+                const previousBtn = document.querySelector('#previous-btn');
+                const nextBtn = document.querySelector('#next-btn');
+                const confirmBtn = document.querySelector('#confirm-selection-btn');
+                
+                // 上一个按钮
+                if (currentLocationIndex === 0) {
+                    previousBtn.disabled = true;
+                    previousBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                } else {
+                    previousBtn.disabled = false;
+                    previousBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+                
+                // 下一个按钮
+                if (currentLocationIndex === illustrationLocations.length - 1) {
+                    nextBtn.textContent = '完成';
+                    nextBtn.innerHTML = '完成<i class="fas fa-check ml-2"></i>';
+                } else {
+                    nextBtn.textContent = '下一个';
+                    nextBtn.innerHTML = '下一个<i class="fas fa-arrow-right ml-2"></i>';
+                }
+                
+                // 确认选择按钮
+                if (selectedIllustrationId) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    confirmBtn.disabled = true;
+                    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            }
+
+            // 选择插图
+            function selectIllustration(illustrationId) {
+                // 移除之前的选择
+                document.querySelectorAll('.illustration-card').forEach(card => {
+                    card.classList.remove('selected');
+                });
+                
+                // 添加新的选择
+                const selectedCard = document.querySelector(`#illustration-${illustrationId}`);
+                if (selectedCard) {
+                    selectedCard.classList.add('selected');
+                    selectedIllustrationId = illustrationId;
+                }
+                
+                updateButtonStates();
+            }
+
+            // 处理选择完成
+            function handleSelectionComplete(action = 'select') {
+                const currentLocation = illustrationLocations[currentLocationIndex];
+                
+                if (action === 'select' && selectedIllustrationId) {
+                    currentLocation.status = '已选择';
+                    currentLocation.selectedIllustration = selectedIllustrationId;
+                    
+                    // 显示成功提示
+                    showToast('插图选择成功！');
+                } else if (action === 'abandon') {
+                    currentLocation.status = '已放弃';
+                    showToast('已放弃此处插图');
+                } else if (action === 'skip') {
+                    currentLocation.status = '已跳过';
+                    showToast('已跳过此位置');
+                }
+                
+                // 检查是否还有下一个定位点
+                if (currentLocationIndex < illustrationLocations.length - 1) {
+                    currentLocationIndex++;
+                    selectedIllustrationId = null;
+                    
+                    // 重置插图选择状态
+                    document.querySelectorAll('.illustration-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    
+                    updateCurrentLocation();
+                } else {
+                    // 所有定位点处理完毕，跳转到阅读页面
+                    setTimeout(() => {
+                        window.location.href = `P-READING_VIEW.html?workId=${workId}`;
+                    }, 1000);
+                }
+            }
+
+            // 显示提示信息
+            function showToast(message) {
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-text-primary text-white px-4 py-2 rounded-lg text-sm z-50';
+                toast.textContent = message;
+                document.body.appendChild(toast);
+                
+                setTimeout(() => {
+                    toast.remove();
+                }, 2000);
+            }
+
+            // 返回按钮点击事件
+            document.querySelector('#back-btn').addEventListener('click', function() {
+                if (confirm('确定要返回吗？当前的插图选择将不会保存。')) {
+                    // 根据来源页面返回
+                    if (params.from === 'edit') {
+                        window.location.href = `P-WORK_EDIT.html?workId=${workId}`;
+                    } else {
+                        window.location.href = 'P-NEW_WORK.html';
+                    }
+                }
+            });
+
+            // 跳过按钮点击事件
+            document.querySelector('#skip-btn').addEventListener('click', function() {
+                if (confirm('确定要跳过这个插图位置吗？')) {
+                    handleSelectionComplete('skip');
+                }
+            });
+
+            // 插图卡片点击事件
+            document.querySelectorAll('.illustration-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const illustrationId = this.dataset.illustrationId;
+                    selectIllustration(illustrationId);
+                });
+            });
+
+            // 选择插图按钮点击事件
+            document.querySelectorAll('.select-illustration-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const illustrationId = this.dataset.illustrationId;
+                    selectIllustration(illustrationId);
+                });
+            });
+
+            // 重新生成按钮点击事件
+            document.querySelector('#regenerate-btn').addEventListener('click', function() {
+                if (confirm('确定要重新生成插图吗？当前的选择将被清空。')) {
+                    // 显示加载状态
+                    document.querySelector('#loading-overlay').classList.remove('hidden');
+                    
+                    // 模拟重新生成过程
+                    setTimeout(() => {
+                        document.querySelector('#loading-overlay').classList.add('hidden');
+                        selectedIllustrationId = null;
+                        
+                        // 重置选择状态
+                        document.querySelectorAll('.illustration-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        
+                        updateButtonStates();
+                        showToast('插图重新生成完成！');
+                    }, 3000);
+                }
+            });
+
+            // 放弃按钮点击事件
+            document.querySelector('#abandon-btn').addEventListener('click', function() {
+                if (confirm('确定要放弃这个插图位置吗？')) {
+                    handleSelectionComplete('abandon');
+                }
+            });
+
+            // 确认选择按钮点击事件
+            document.querySelector('#confirm-selection-btn').addEventListener('click', function() {
+                if (selectedIllustrationId) {
+                    handleSelectionComplete('select');
+                }
+            });
+
+            // 上一个按钮点击事件
+            document.querySelector('#previous-btn').addEventListener('click', function() {
+                if (currentLocationIndex > 0) {
+                    currentLocationIndex--;
+                    selectedIllustrationId = null;
+                    
+                    // 重置插图选择状态
+                    document.querySelectorAll('.illustration-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    
+                    updateCurrentLocation();
+                }
+            });
+
+            // 下一个按钮点击事件
+            document.querySelector('#next-btn').addEventListener('click', function() {
+                if (currentLocationIndex < illustrationLocations.length - 1) {
+                    // 直接跳到下一个位置，不保存当前选择
+                    currentLocationIndex++;
+                    selectedIllustrationId = null;
+                    
+                    // 重置插图选择状态
+                    document.querySelectorAll('.illustration-card').forEach(card => {
+                        card.classList.remove('selected');
+                    });
+                    
+                    updateCurrentLocation();
+                } else {
+                    // 完成所有插图选择，跳转到阅读页面
+                    window.location.href = `P-READING_VIEW.html?workId=${workId}`;
+                }
+            });
+
+            // 插图滚动指示器更新
+            const scrollContainer = document.querySelector('#illustration-scroll');
+            const scrollIndicators = document.querySelectorAll('#scroll-indicators div');
+            
+            scrollContainer.addEventListener('scroll', function() {
+                const scrollLeft = this.scrollLeft;
+                const scrollWidth = this.scrollWidth - this.clientWidth;
+                const percentage = scrollLeft / scrollWidth;
+                const indicatorIndex = Math.floor(percentage * (scrollIndicators.length - 1));
+                
+                scrollIndicators.forEach((indicator, index) => {
+                    if (index === indicatorIndex) {
+                        indicator.classList.remove('bg-gray-300');
+                        indicator.classList.add('bg-primary');
+                    } else {
+                        indicator.classList.remove('bg-primary');
+                        indicator.classList.add('bg-gray-300');
+                    }
+                });
+            });
+
+            // 初始化页面
+            updateCurrentLocation();
+        });
+    </script>
+</body>
+</html>

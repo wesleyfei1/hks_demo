@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画叙 - 账户设置</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        tertiary: '#06b6d4',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        'text-primary': '#1f2937',
+                        'text-secondary': '#6b7280',
+                        'bg-light': '#f8fafc',
+                        'border-light': '#e5e7eb'
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .setting-item-hover:hover {
+            background-color: #f9fafb;
+            transform: translateX(4px);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            animation: modalSlideUp 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .input-focus:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5855eb 0%, #7c3aed 100%);
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans">
+    <!-- 状态栏 -->
+    <div id="status-bar" class="bg-white safe-top">
+        <div class="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-900">
+            <span>9:41</span>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-container" class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header id="top-header" class="bg-gradient-to-r from-primary to-secondary text-white sticky top-0 z-30 shadow-md">
+            <div class="flex items-center justify-between px-4 py-4">
+                <button id="back-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                
+                <div id="page-title" class="flex items-center space-x-2">
+                    <h1 class="text-xl font-bold">账户设置</h1>
+                </div>
+                
+                <div class="w-10"></div> <!-- 占位元素，保持标题居中 -->
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main id="main-content" class="px-4 py-6">
+            <!-- 用户信息卡片 -->
+            <div id="user-info-card" class="bg-white rounded-2xl shadow-card p-6 mb-6">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white text-2xl font-bold mr-4">
+                        画
+                    </div>
+                    <div class="flex-1">
+                        <h3 id="current-nickname" class="text-lg font-semibold text-text-primary mb-1">画叙创作者</h3>
+                        <p id="current-email" class="text-sm text-text-secondary">user@example.com</p>
+                        <p class="text-xs text-text-secondary mt-1">ID: 123456789</p>
+                    </div>
+                    <div class="text-text-secondary">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账户设置列表 -->
+            <div id="settings-list" class="space-y-4">
+                <!-- 修改昵称 -->
+                <div id="change-nickname-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-user-edit text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">修改昵称</h4>
+                                <p class="text-sm text-text-secondary">当前昵称：画叙创作者</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 修改密码 -->
+                <div id="change-password-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-key text-green-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">修改密码</h4>
+                                <p class="text-sm text-text-secondary">定期更换密码，保护账户安全</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 绑定邮箱 -->
+                <div id="bind-email-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-purple-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">绑定邮箱</h4>
+                                <p class="text-sm text-text-secondary">已绑定：u****@example.com</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 绑定手机 -->
+                <div id="bind-phone-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-mobile-alt text-orange-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">绑定手机</h4>
+                                <p class="text-sm text-text-secondary">未绑定</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 账户安全 -->
+                <div id="account-security-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-shield-alt text-red-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">账户安全</h4>
+                                <p class="text-sm text-text-secondary">登录记录、设备管理</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 数据管理 -->
+                <div id="data-management-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-database text-indigo-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">数据管理</h4>
+                                <p class="text-sm text-text-secondary">数据备份、导出与删除</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 高级选项 -->
+            <div id="advanced-options-section" class="mt-6">
+                <div id="advanced-options-item" class="bg-white rounded-2xl shadow-card p-5 setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-cogs text-gray-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-base font-medium text-text-primary">高级选项</h4>
+                                <p class="text-sm text-text-secondary">AI模型配置、API设置等</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- 高级选项弹窗 -->
+    <div id="advanced-options-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 text-center">高级选项</h3>
+                    <div class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-xl">
+                            <h4 class="text-sm font-medium text-text-primary mb-3">AI大模型设置</h4>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-brain text-primary mr-3"></i>
+                                        <span class="text-sm">使用AI大模型的API</span>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="use-ai-api" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                                
+                                <div id="api-settings" class="hidden pl-8 space-y-3">
+                                    <div>
+                                        <label for="api-key" class="block text-xs text-text-secondary mb-1">API密钥</label>
+                                        <input type="password" id="api-key" class="w-full px-3 py-2 border border-border-light rounded-lg input-focus text-sm" placeholder="请输入API密钥">
+                                    </div>
+                                    <div>
+                                        <label for="api-url" class="block text-xs text-text-secondary mb-1">API地址</label>
+                                        <input type="text" id="api-url" class="w-full px-3 py-2 border border-border-light rounded-lg input-focus text-sm" placeholder="请输入API地址">
+                                    </div>
+                                    <div>
+                                        <label for="model-select" class="block text-xs text-text-secondary mb-1">模型选择</label>
+                                        <select id="model-select" class="w-full px-3 py-2 border border-border-light rounded-lg input-focus text-sm">
+                                            <option value="gpt-4">GPT-4</option>
+                                            <option value="gpt-3.5">GPT-3.5</option>
+                                            <option value="claude-3">Claude 3</option>
+                                            <option value="gemini">Gemini</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="cancel-advanced-btn" class="flex-1 py-3 px-4 btn-secondary rounded-xl font-medium">
+                            取消
+                        </button>
+                        <button id="confirm-advanced-btn" class="flex-1 py-3 px-4 btn-primary text-white rounded-xl font-medium">
+                            保存
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改昵称弹窗 -->
+    <div id="nickname-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 text-center">修改昵称</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="new-nickname" class="block text-sm font-medium text-text-primary mb-2">新昵称</label>
+                            <input type="text" id="new-nickname" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入新昵称" maxlength="20">
+                            <p class="text-xs text-text-secondary mt-1">昵称长度为2-20个字符</p>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="cancel-nickname-btn" class="flex-1 py-3 px-4 btn-secondary rounded-xl font-medium">
+                            取消
+                        </button>
+                        <button id="confirm-nickname-btn" class="flex-1 py-3 px-4 btn-primary text-white rounded-xl font-medium">
+                            确认
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码弹窗 -->
+    <div id="password-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 text-center">修改密码</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="current-password" class="block text-sm font-medium text-text-primary mb-2">当前密码</label>
+                            <input type="password" id="current-password" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入当前密码">
+                        </div>
+                        <div>
+                            <label for="new-password" class="block text-sm font-medium text-text-primary mb-2">新密码</label>
+                            <input type="password" id="new-password" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入新密码">
+                        </div>
+                        <div>
+                            <label for="confirm-password" class="block text-sm font-medium text-text-primary mb-2">确认新密码</label>
+                            <input type="password" id="confirm-password" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请再次输入新密码">
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="cancel-password-btn" class="flex-1 py-3 px-4 btn-secondary rounded-xl font-medium">
+                            取消
+                        </button>
+                        <button id="confirm-password-btn" class="flex-1 py-3 px-4 btn-primary text-white rounded-xl font-medium">
+                            确认
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 绑定邮箱弹窗 -->
+    <div id="email-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 text-center">绑定邮箱</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="new-email" class="block text-sm font-medium text-text-primary mb-2">邮箱地址</label>
+                            <input type="email" id="new-email" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入邮箱地址">
+                        </div>
+                        <div>
+                            <label for="email-code" class="block text-sm font-medium text-text-primary mb-2">验证码</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="email-code" class="flex-1 px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入验证码">
+                                <button id="send-email-code" class="px-4 py-3 bg-gray-100 text-text-primary rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
+                                    发送
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="cancel-email-btn" class="flex-1 py-3 px-4 btn-secondary rounded-xl font-medium">
+                            取消
+                        </button>
+                        <button id="confirm-email-btn" class="flex-1 py-3 px-4 btn-primary text-white rounded-xl font-medium">
+                            确认
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 绑定手机弹窗 -->
+    <div id="phone-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-overlay absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-2xl shadow-xl w-full max-w-md">
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-text-primary mb-4 text-center">绑定手机</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label for="new-phone" class="block text-sm font-medium text-text-primary mb-2">手机号码</label>
+                            <input type="tel" id="new-phone" class="w-full px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入手机号码">
+                        </div>
+                        <div>
+                            <label for="phone-code" class="block text-sm font-medium text-text-primary mb-2">验证码</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="phone-code" class="flex-1 px-4 py-3 border border-border-light rounded-xl input-focus" placeholder="请输入验证码">
+                                <button id="send-phone-code" class="px-4 py-3 bg-gray-100 text-text-primary rounded-xl text-sm font-medium hover:bg-gray-200 transition-colors">
+                                    发送
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button id="cancel-phone-btn" class="flex-1 py-3 px-4 btn-secondary rounded-xl font-medium">
+                            取消
+                        </button>
+                        <button id="confirm-phone-btn" class="flex-1 py-3 px-4 btn-primary text-white rounded-xl font-medium">
+                            确认
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-text-primary text-white px-4 py-2 rounded-lg text-sm font-medium z-50 hidden">
+        操作成功
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回按钮点击事件
+            document.querySelector('#back-btn').addEventListener('click', function() {
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 修改昵称
+            document.querySelector('#change-nickname-item').addEventListener('click', function() {
+                document.querySelector('#nickname-modal').classList.remove('hidden');
+                document.querySelector('#new-nickname').value = document.querySelector('#current-nickname').textContent;
+                document.querySelector('#new-nickname').focus();
+            });
+
+            // 取消修改昵称
+            document.querySelector('#cancel-nickname-btn').addEventListener('click', function() {
+                document.querySelector('#nickname-modal').classList.add('hidden');
+                document.querySelector('#new-nickname').value = '';
+            });
+
+            // 确认修改昵称
+            document.querySelector('#confirm-nickname-btn').addEventListener('click', function() {
+                const newNickname = document.querySelector('#new-nickname').value.trim();
+                
+                if (!newNickname || newNickname.length < 2 || newNickname.length > 20) {
+                    showToast('昵称长度应为2-20个字符');
+                    return;
+                }
+                
+                // 更新显示的昵称
+                document.querySelector('#current-nickname').textContent = newNickname;
+                document.querySelector('#change-nickname-item p').textContent = `当前昵称：${newNickname}`;
+                
+                // 关闭弹窗
+                document.querySelector('#nickname-modal').classList.add('hidden');
+                document.querySelector('#new-nickname').value = '';
+                
+                showToast('昵称修改成功');
+            });
+
+            // 修改密码
+            document.querySelector('#change-password-item').addEventListener('click', function() {
+                document.querySelector('#password-modal').classList.remove('hidden');
+                document.querySelector('#current-password').focus();
+            });
+
+            // 取消修改密码
+            document.querySelector('#cancel-password-btn').addEventListener('click', function() {
+                document.querySelector('#password-modal').classList.add('hidden');
+                // 清空输入框
+                document.querySelector('#current-password').value = '';
+                document.querySelector('#new-password').value = '';
+                document.querySelector('#confirm-password').value = '';
+            });
+
+            // 确认修改密码
+            document.querySelector('#confirm-password-btn').addEventListener('click', function() {
+                const currentPassword = document.querySelector('#current-password').value;
+                const newPassword = document.querySelector('#new-password').value;
+                const confirmPassword = document.querySelector('#confirm-password').value;
+                
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showToast('请填写完整信息');
+                    return;
+                }
+                
+                if (newPassword.length < 6) {
+                    showToast('新密码长度不能少于6位');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showToast('两次输入的密码不一致');
+                    return;
+                }
+                
+                // 关闭弹窗
+                document.querySelector('#password-modal').classList.add('hidden');
+                // 清空输入框
+                document.querySelector('#current-password').value = '';
+                document.querySelector('#new-password').value = '';
+                document.querySelector('#confirm-password').value = '';
+                
+                showToast('密码修改成功');
+            });
+
+            // 绑定邮箱
+            document.querySelector('#bind-email-item').addEventListener('click', function() {
+                document.querySelector('#email-modal').classList.remove('hidden');
+                document.querySelector('#new-email').focus();
+            });
+
+            // 取消绑定邮箱
+            document.querySelector('#cancel-email-btn').addEventListener('click', function() {
+                document.querySelector('#email-modal').classList.add('hidden');
+                // 清空输入框
+                document.querySelector('#new-email').value = '';
+                document.querySelector('#email-code').value = '';
+            });
+
+            // 发送邮箱验证码
+            document.querySelector('#send-email-code').addEventListener('click', function() {
+                const email = document.querySelector('#new-email').value.trim();
+                
+                if (!email) {
+                    showToast('请先输入邮箱地址');
+                    return;
+                }
+                
+                // 简单的邮箱格式验证
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showToast('请输入正确的邮箱格式');
+                    return;
+                }
+                
+                // 模拟发送验证码
+                this.textContent = '60s';
+                this.disabled = true;
+                
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    this.textContent = `${countdown}s`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        this.textContent = '发送';
+                        this.disabled = false;
+                    }
+                }, 1000);
+                
+                showToast('验证码已发送');
+            });
+
+            // 确认绑定邮箱
+            document.querySelector('#confirm-email-btn').addEventListener('click', function() {
+                const email = document.querySelector('#new-email').value.trim();
+                const code = document.querySelector('#email-code').value.trim();
+                
+                if (!email || !code) {
+                    showToast('请填写完整信息');
+                    return;
+                }
+                
+                // 模拟验证
+                if (code === '123456') {
+                    // 更新显示的邮箱
+                    const maskedEmail = email.replace(/(.{1})(.*)(@.*)/, '$1****$3');
+                    document.querySelector('#current-email').textContent = email;
+                    document.querySelector('#bind-email-item p').textContent = `已绑定：${maskedEmail}`;
+                    
+                    // 关闭弹窗
+                    document.querySelector('#email-modal').classList.add('hidden');
+                    // 清空输入框
+                    document.querySelector('#new-email').value = '';
+                    document.querySelector('#email-code').value = '';
+                    
+                    showToast('邮箱绑定成功');
+                } else {
+                    showToast('验证码错误');
+                }
+            });
+
+            // 绑定手机
+            document.querySelector('#bind-phone-item').addEventListener('click', function() {
+                document.querySelector('#phone-modal').classList.remove('hidden');
+                document.querySelector('#new-phone').focus();
+            });
+
+            // 取消绑定手机
+            document.querySelector('#cancel-phone-btn').addEventListener('click', function() {
+                document.querySelector('#phone-modal').classList.add('hidden');
+                // 清空输入框
+                document.querySelector('#new-phone').value = '';
+                document.querySelector('#phone-code').value = '';
+            });
+
+            // 发送手机验证码
+            document.querySelector('#send-phone-code').addEventListener('click', function() {
+                const phone = document.querySelector('#new-phone').value.trim();
+                
+                if (!phone) {
+                    showToast('请先输入手机号码');
+                    return;
+                }
+                
+                // 简单的手机号格式验证
+                const phoneRegex = /^1[3-9]\d{9}$/;
+                if (!phoneRegex.test(phone)) {
+                    showToast('请输入正确的手机号码');
+                    return;
+                }
+                
+                // 模拟发送验证码
+                this.textContent = '60s';
+                this.disabled = true;
+                
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    this.textContent = `${countdown}s`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        this.textContent = '发送';
+                        this.disabled = false;
+                    }
+                }, 1000);
+                
+                showToast('验证码已发送');
+            });
+
+            // 确认绑定手机
+            document.querySelector('#confirm-phone-btn').addEventListener('click', function() {
+                const phone = document.querySelector('#new-phone').value.trim();
+                const code = document.querySelector('#phone-code').value.trim();
+                
+                if (!phone || !code) {
+                    showToast('请填写完整信息');
+                    return;
+                }
+                
+                // 模拟验证
+                if (code === '123456') {
+                    // 更新显示的手机状态
+                    const maskedPhone = phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+                    document.querySelector('#bind-phone-item p').textContent = `已绑定：${maskedPhone}`;
+                    
+                    // 关闭弹窗
+                    document.querySelector('#phone-modal').classList.add('hidden');
+                    // 清空输入框
+                    document.querySelector('#new-phone').value = '';
+                    document.querySelector('#phone-code').value = '';
+                    
+                    showToast('手机绑定成功');
+                } else {
+                    showToast('验证码错误');
+                }
+            });
+
+            // 账户安全
+            document.querySelector('#account-security-item').addEventListener('click', function() {
+                showToast('账户安全功能开发中');
+            });
+
+            // 数据管理
+            document.querySelector('#data-management-item').addEventListener('click', function() {
+                showToast('数据管理功能开发中');
+            });
+
+            // 点击弹窗背景关闭弹窗
+            const modals = ['nickname-modal', 'password-modal', 'email-modal', 'phone-modal'];
+            modals.forEach(modalId => {
+                const modal = document.querySelector(`#${modalId}`);
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === this || e.target.classList.contains('modal-overlay')) {
+                            this.classList.add('hidden');
+                        }
+                    });
+                }
+            });
+
+            // Toast 提示函数
+            function showToast(message) {
+                const toast = document.querySelector('#toast');
+                toast.textContent = message;
+                toast.classList.remove('hidden');
+                
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 3000);
+            }
+        // 高级选项
+        document.querySelector('#advanced-options-item').addEventListener('click', function() {
+            document.querySelector('#advanced-options-modal').classList.remove('hidden');
+        });
+        
+        // 取消高级选项
+        document.querySelector('#cancel-advanced-btn').addEventListener('click', function() {
+            document.querySelector('#advanced-options-modal').classList.add('hidden');
+        });
+        
+        // 确认高级选项
+        document.querySelector('#confirm-advanced-btn').addEventListener('click', function() {
+            // 关闭弹窗
+            document.querySelector('#advanced-options-modal').classList.add('hidden');
+            showToast('高级选项已保存');
+        });
+        
+        // AI API开关
+        document.querySelector('#use-ai-api').addEventListener('change', function() {
+            const apiSettings = document.querySelector('#api-settings');
+            if (this.checked) {
+                apiSettings.classList.remove('hidden');
+            } else {
+                apiSettings.classList.add('hidden');
+            }
+        });
+        
+        // 点击弹窗背景关闭弹窗
+        document.querySelector('#advanced-options-modal').addEventListener('click', function(e) {
+            if (e.target === this || e.target.classList.contains('modal-overlay')) {
+                this.classList.add('hidden');
+            }
+        });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画叙 - 关于我们</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        tertiary: '#06b6d4',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        'text-primary': '#1f2937',
+                        'text-secondary': '#6b7280',
+                        'bg-light': '#f8fafc',
+                        'border-light': '#e5e7eb'
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .setting-item-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .app-logo-glow {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.3);
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans">
+    <!-- 状态栏 -->
+    <div id="status-bar" class="bg-white safe-top">
+        <div class="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-900">
+            <span>9:41</span>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-container" class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header id="top-header" class="bg-gradient-to-r from-primary to-secondary text-white sticky top-0 z-30 shadow-md">
+            <div class="flex items-center justify-between px-4 py-4">
+                <button id="back-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                
+                <h1 id="page-title" class="text-xl font-bold">关于我们</h1>
+                
+                <div class="w-10"></div> <!-- 占位元素，保持标题居中 -->
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main id="about-main" class="px-4 py-6">
+            <!-- 应用信息卡片 -->
+            <div id="app-info-card" class="bg-white rounded-3xl shadow-card p-8 mb-8 text-center">
+                <!-- 应用Logo -->
+                <div id="app-logo-container" class="w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-3xl flex items-center justify-center mx-auto mb-6 app-logo-glow">
+                    <i class="fas fa-palette text-white text-4xl"></i>
+                </div>
+                
+                <!-- 应用名称 -->
+                <h2 id="app-name" class="text-3xl font-bold gradient-text mb-3">画叙</h2>
+                
+                <!-- 应用描述 -->
+                <p id="app-description" class="text-text-secondary mb-6 leading-relaxed">
+                    一款基于AI技术的智能插图生成应用，让文字故事自动转化为图文并茂的视觉叙事，为您的创作增添无限可能。
+                </p>
+                
+                <!-- 版本信息 -->
+                <div id="version-info" class="bg-gray-50 rounded-2xl p-4">
+                    <div class="flex items-center justify-center space-x-2">
+                        <i class="fas fa-code-branch text-primary"></i>
+                        <span class="text-text-secondary">版本</span>
+                        <span id="app-version" class="text-lg font-semibold text-text-primary">1.0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能特色 -->
+            <div id="features-section" class="mb-8">
+                <h3 class="text-xl font-bold text-text-primary mb-4 px-2">核心特色</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white rounded-2xl p-4 shadow-card text-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-magic text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-text-primary mb-1">AI智能生成</h4>
+                        <p class="text-xs text-text-secondary">自动分析故事内容生成匹配插图</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 shadow-card text-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-success to-tertiary rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-palette text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-text-primary mb-1">风格多样</h4>
+                        <p class="text-xs text-text-secondary">多种艺术风格任您选择</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 shadow-card text-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-warning to-danger rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-edit text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-text-primary mb-1">便捷编辑</h4>
+                        <p class="text-xs text-text-secondary">轻松调整插图位置和内容</p>
+                    </div>
+                    <div class="bg-white rounded-2xl p-4 shadow-card text-center">
+                        <div class="w-12 h-12 bg-gradient-to-br from-info to-secondary rounded-xl flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-book-open text-white text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-text-primary mb-1">沉浸阅读</h4>
+                        <p class="text-xs text-text-secondary">享受图文并茂的阅读体验</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 法律条款和信息 -->
+            <div id="legal-section" class="space-y-4">
+                <h3 class="text-xl font-bold text-text-primary mb-4 px-2">法律条款</h3>
+                
+                <!-- 隐私政策 -->
+                <div id="privacy-policy-item" class="bg-white rounded-2xl shadow-card setting-item-hover overflow-hidden">
+                    <button class="w-full p-5 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-shield-alt text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-text-primary">隐私政策</h4>
+                                <p class="text-sm text-text-secondary">了解我们如何保护您的隐私</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </button>
+                </div>
+
+                <!-- 用户协议 -->
+                <div id="user-agreement-item" class="bg-white rounded-2xl shadow-card setting-item-hover overflow-hidden">
+                    <button class="w-full p-5 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-file-contract text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-text-primary">用户协议</h4>
+                                <p class="text-sm text-text-secondary">查看使用条款和服务协议</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </button>
+                </div>
+
+                <!-- 版权声明 -->
+                <div id="copyright-item" class="bg-white rounded-2xl shadow-card setting-item-hover overflow-hidden">
+                    <button class="w-full p-5 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-copyright text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-text-primary">版权声明</h4>
+                                <p class="text-sm text-text-secondary">了解知识产权和版权信息</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </button>
+                </div>
+
+                <!-- 联系我们 -->
+                <div id="contact-item" class="bg-white rounded-2xl shadow-card setting-item-hover overflow-hidden">
+                    <button class="w-full p-5 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-text-primary">联系我们</h4>
+                                <p class="text-sm text-text-secondary">有问题或建议？联系我们</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </button>
+                </div>
+
+                <!-- 意见反馈 -->
+                <div id="feedback-item" class="bg-white rounded-2xl shadow-card setting-item-hover overflow-hidden">
+                    <button class="w-full p-5 text-left flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
+                                <i class="fas fa-comment-dots text-white"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-text-primary">意见反馈</h4>
+                                <p class="text-sm text-text-secondary">帮助我们改进产品</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部信息 -->
+            <div id="footer-info" class="mt-12 text-center">
+                <p class="text-sm text-text-secondary mb-2">© 2024 画叙团队</p>
+                <p class="text-xs text-text-secondary">让文字插上想象的翅膀</p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回按钮点击事件
+            document.querySelector('#back-btn').addEventListener('click', function() {
+                window.location.href = 'P-SETTINGS.html';
+            });
+
+            // 隐私政策点击事件
+            document.querySelector('#privacy-policy-item').addEventListener('click', function() {
+                // 在实际应用中，这里会打开隐私政策页面或内置浏览器
+                console.log('打开隐私政策');
+                // 模拟打开外部链接
+                window.open('https://example.com/privacy-policy', '_blank');
+            });
+
+            // 用户协议点击事件
+            document.querySelector('#user-agreement-item').addEventListener('click', function() {
+                // 在实际应用中，这里会打开用户协议页面或内置浏览器
+                console.log('打开用户协议');
+                // 模拟打开外部链接
+                window.open('https://example.com/user-agreement', '_blank');
+            });
+
+            // 版权声明点击事件
+            document.querySelector('#copyright-item').addEventListener('click', function() {
+                // 在实际应用中，这里会打开版权声明页面或内置浏览器
+                console.log('打开版权声明');
+                // 模拟打开外部链接
+                window.open('https://example.com/copyright', '_blank');
+            });
+
+            // 联系我们点击事件
+            document.querySelector('#contact-item').addEventListener('click', function() {
+                // 在实际应用中，这里可能会打开邮件客户端或联系表单
+                console.log('联系我们');
+                // 模拟打开邮件客户端
+                window.location.href = 'mailto:contact@huaxu.app';
+            });
+
+            // 意见反馈点击事件
+            document.querySelector('#feedback-item').addEventListener('click', function() {
+                // 在实际应用中，这里可能会打开反馈表单或跳转到反馈页面
+                console.log('意见反馈');
+                // 模拟打开反馈页面
+                window.open('https://example.com/feedback', '_blank');
+            });
+        });
+    </script>
+</body>
+</html>

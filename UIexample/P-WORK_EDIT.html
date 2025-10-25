@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画叙 - 作品编辑</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        tertiary: '#06b6d4',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        'text-primary': '#1f2937',
+                        'text-secondary': '#6b7280',
+                        'bg-light': '#f8fafc',
+                        'border-light': '#e5e7eb'
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5855eb 0%, #7c3aed 100%);
+            transform: translateY(-1px);
+        }
+        
+        .illustration-placeholder {
+            position: relative;
+            transition: all 0.3s ease-in-out;
+        }
+        
+        .illustration-placeholder:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .illustration-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            border-radius: 12px;
+        }
+        
+        .illustration-placeholder:hover .illustration-overlay {
+            opacity: 1;
+        }
+        
+        .text-editor {
+            min-height: 400px;
+            line-height: 1.8;
+            font-size: 16px;
+        }
+        
+        .text-editor:focus {
+            outline: none;
+            border-color: theme('colors.primary');
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        .modal-backdrop {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal-content {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        .modal-content.show {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans">
+    <!-- 状态栏 -->
+    <div id="status-bar" class="bg-white safe-top">
+        <div class="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-900">
+            <span>9:41</span>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-container" class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header id="top-header" class="bg-gradient-to-r from-primary to-secondary text-white sticky top-0 z-30 shadow-md">
+            <div class="flex items-center justify-between px-4 py-4">
+                <button id="back-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                
+                <div id="page-title" class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-edit text-primary"></i>
+                    </div>
+                    <h1 class="text-lg font-bold">编辑作品</h1>
+                </div>
+                
+                <button id="save-btn" class="bg-white text-primary px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors shadow-md">
+                    保存
+                </button>
+            </div>
+        </header>
+
+        <!-- 作品信息区域 -->
+        <div id="work-info-section" class="bg-white p-4 shadow-sm">
+            <div class="space-y-3">
+                <div>
+                    <label for="work-title" class="block text-sm font-medium text-text-primary mb-1">作品标题</label>
+                    <input type="text" id="work-title" value="月光下的秘密花园" 
+                           class="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+                <div>
+                    <label for="work-author" class="block text-sm font-medium text-text-primary mb-1">作者</label>
+                    <input type="text" id="work-author" value="林小雨" 
+                           class="w-full px-3 py-2 border border-border-light rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+                </div>
+            </div>
+        </div>
+
+        <!-- 文本编辑区域 -->
+        <main id="editor-main" class="p-4">
+            <div class="bg-white rounded-2xl shadow-card p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-text-primary">故事内容</h2>
+                    <div class="flex items-center space-x-3">
+                        <div class="flex items-center text-sm text-text-secondary">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            <span id="char-count">字数：328</span>
+                        </div>
+                        <button id="fullscreen-btn" class="text-text-secondary hover:text-primary transition-colors">
+                            <i class="fas fa-expand-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 文本编辑器 -->
+                <div id="text-editor" contenteditable="true" 
+                     class="text-editor bg-gray-50 border border-border-light rounded-lg p-4 text-text-primary placeholder-gray-400">
+                    <p>在一个宁静的夜晚，小女孩莉莉发现了一个隐藏在森林深处的神秘花园。每当月光洒下时，花园里的花朵就会发出柔和的光芒。</p>
+                    
+                    <!-- 插图占位符 1 -->
+                    <div id="illustration-1" class="illustration-placeholder bg-gray-100 rounded-xl p-4 my-6 border-2 border-dashed border-gray-300 cursor-pointer" 
+                         data-location-id="loc_001">
+                        <div class="relative">
+                            <img src="https://s.coze.cn/image/ln5zxBOhYG0/" 
+                                 alt="月光下的花园插图" 
+                                 data-category="自然风景"
+                                 class="w-full h-48 object-cover rounded-lg">
+                            <div class="illustration-overlay">
+                                <div class="bg-white bg-opacity-90 rounded-lg p-3 text-center">
+                                    <i class="fas fa-magic text-primary text-xl mb-2"></i>
+                                    <p class="text-sm font-medium text-text-primary">点击编辑插图</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="text-xs text-text-secondary bg-blue-100 px-2 py-1 rounded-full">AI生成插图</span>
+                        </div>
+                    </div>
+                    
+                    <p>莉莉小心翼翼地走进花园，发现这里的每一朵花都有自己独特的颜色和香味。最引人注目的是中央的那朵金色玫瑰，它的花瓣在月光下闪闪发光，仿佛镶嵌了无数颗钻石。</p>
+                    
+                    <!-- 插图占位符 2 -->
+                    <div id="illustration-2" class="illustration-placeholder bg-gray-100 rounded-xl p-4 my-6 border-2 border-dashed border-gray-300 cursor-pointer"
+                         data-location-id="loc_002">
+                        <div class="relative">
+                            <img src="https://s.coze.cn/image/bi0ZJuIoGxY/" 
+                                 alt="花园中的金色玫瑰" 
+                                 data-category="自然风景"
+                                 class="w-full h-48 object-cover rounded-lg">
+                            <div class="illustration-overlay">
+                                <div class="bg-white bg-opacity-90 rounded-lg p-3 text-center">
+                                    <i class="fas fa-magic text-primary text-xl mb-2"></i>
+                                    <p class="text-sm font-medium text-text-primary">点击编辑插图</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="text-xs text-text-secondary bg-blue-100 px-2 py-1 rounded-full">AI生成插图</span>
+                        </div>
+                    </div>
+                    
+                    <p>突然，花园中央出现了一位美丽的花仙子。她告诉莉莉，这个花园是月光女神的秘密花园，只有心地纯洁的孩子才能看到它。花仙子送给莉莉一颗闪亮的种子，告诉她只要用心浇灌，就能在自己的花园里种出同样美丽的花朵。</p>
+                    
+                    <p>从那以后，莉莉每天都会来到这个秘密花园，和花仙子一起照顾那些神奇的花朵。她也学会了如何用心去感受大自然的美丽和神奇。</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 插图编辑选项模态框 -->
+    <div id="illustration-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0"></div>
+        <div class="relative flex items-end justify-center min-h-screen">
+            <div id="modal-content" class="modal-content bg-white rounded-t-3xl w-full max-w-md p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold text-text-primary">编辑插图</h3>
+                    <button id="close-modal" class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+                        <i class="fas fa-times text-text-secondary"></i>
+                    </button>
+                </div>
+                
+                <div class="space-y-4">
+                    <button id="regenerate-btn" class="w-full flex items-center justify-center space-x-3 p-4 bg-primary text-white rounded-xl hover:bg-primary/90 transition-colors">
+                        <i class="fas fa-sync-alt text-lg"></i>
+                        <span class="font-medium">重新生成</span>
+                    </button>
+                    
+                    <button id="replace-btn" class="w-full flex items-center justify-center space-x-3 p-4 bg-gray-100 text-text-primary rounded-xl hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-image text-lg"></i>
+                        <span class="font-medium">替换为本地图片</span>
+                    </button>
+                    
+                    <button id="delete-btn" class="w-full flex items-center justify-center space-x-3 p-4 bg-danger text-white rounded-xl hover:bg-danger/90 transition-colors">
+                        <i class="fas fa-trash text-lg"></i>
+                        <span class="font-medium">删除插图</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 保存确认模态框 -->
+    <div id="save-confirm-modal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop absolute inset-0"></div>
+        <div class="relative flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-2xl w-full max-w-sm p-6">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-warning text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">确认离开？</h3>
+                    <p class="text-text-secondary mb-6">您有未保存的更改，确定要离开吗？</p>
+                    
+                    <div class="flex space-x-3">
+                        <button id="discard-changes" class="flex-1 py-3 px-4 bg-gray-100 text-text-primary rounded-xl font-medium hover:bg-gray-200 transition-colors">
+                            放弃更改
+                        </button>
+                        <button id="save-and-leave" class="flex-1 py-3 px-4 bg-primary text-white rounded-xl font-medium hover:bg-primary/90 transition-colors">
+                            保存并离开
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            let currentIllustrationId = null;
+            let hasUnsavedChanges = false;
+            const fullscreenBtn = document.querySelector('#fullscreen-btn');
+            
+            // 解析URL参数的辅助函数
+            function getUrlParams() {
+                const params = {};
+                const queryString = window.location.search.substring(1);
+                const urlParams = new URLSearchParams(queryString);
+                
+                for(const [key, value] of urlParams.entries()) {
+                    params[key] = value;
+                }
+                return params;
+            }
+            
+            // 获取URL参数
+            const params = getUrlParams();
+            const workId = params.workId || 'work_001';
+            
+            // 模拟加载作品数据
+            function loadWorkData(workId) {
+                const mockWorks = {
+                    "work_001": {
+                        title: "月光下的秘密花园",
+                        author: "林小雨",
+                        content: "在一个宁静的夜晚，小女孩莉莉发现了一个隐藏在森林深处的神秘花园..."
+                    },
+                    "work_002": {
+                        title: "星际迷航：新纪元",
+                        author: "科幻迷",
+                        content: "2242年，人类终于突破了光速限制，开始了真正的星际探索..."
+                    }
+                };
+                
+                const work = mockWorks[workId] || mockWorks["work_001"];
+                
+                // 更新页面内容
+                document.querySelector('#work-title').value = work.title;
+                document.querySelector('#work-author').value = work.author;
+            }
+            
+            // 初始化页面数据
+            loadWorkData(workId);
+            
+            // 返回按钮点击事件
+            document.querySelector('#back-btn').addEventListener('click', function() {
+                if (hasUnsavedChanges) {
+                    showSaveConfirmModal();
+                } else {
+                    window.location.href = 'P-WORKS_LIST.html';
+                }
+            });
+            
+            // 保存按钮点击事件
+            document.querySelector('#save-btn').addEventListener('click', function() {
+                saveWork();
+            });
+            
+            // 插图点击事件
+            const illustrationElements = document.querySelectorAll('.illustration-placeholder');
+            illustrationElements.forEach(element => {
+                element.addEventListener('click', function() {
+                    currentIllustrationId = this.id;
+                    showIllustrationModal();
+                });
+            });
+            
+            // 关闭插图模态框
+            document.querySelector('#close-modal').addEventListener('click', function() {
+                hideIllustrationModal();
+            });
+            
+            // 点击模态框背景关闭
+            document.querySelector('#illustration-modal .modal-backdrop').addEventListener('click', function() {
+                hideIllustrationModal();
+            });
+            
+            // 重新生成插图
+            document.querySelector('#regenerate-btn').addEventListener('click', function() {
+                const locationId = document.querySelector(`#${currentIllustrationId}`).dataset.locationId;
+                window.location.href = `P-ILLUSTRATION_SELECT.html?workId=${workId}&locationId=${locationId}`;
+            });
+            
+            // 替换为本地图片
+            document.querySelector('#replace-btn').addEventListener('click', function() {
+                console.log('需要调用第三方接口实现本地图片选择功能');
+                // 注释：此功能需要调用设备相册API，在原型阶段仅做UI展示
+                hideIllustrationModal();
+                showToast('功能开发中，敬请期待');
+            });
+            
+            // 删除插图
+            document.querySelector('#delete-btn').addEventListener('click', function() {
+                if (confirm('确定要删除这张插图吗？')) {
+                    document.querySelector(`#${currentIllustrationId}`).remove();
+                    hideIllustrationModal();
+                    hasUnsavedChanges = true;
+                    updateCharCount();
+                    showToast('插图已删除');
+                }
+            });
+            
+            // 显示插图编辑模态框
+            function showIllustrationModal() {
+                document.querySelector('#illustration-modal').classList.remove('hidden');
+                setTimeout(() => {
+                    document.querySelector('#modal-content').classList.add('show');
+                }, 10);
+            }
+            
+            // 隐藏插图编辑模态框
+            function hideIllustrationModal() {
+                document.querySelector('#modal-content').classList.remove('show');
+                setTimeout(() => {
+                    document.querySelector('#illustration-modal').classList.add('hidden');
+                }, 300);
+            }
+            
+            // 显示保存确认模态框
+            function showSaveConfirmModal() {
+                document.querySelector('#save-confirm-modal').classList.remove('hidden');
+            }
+            
+            // 隐藏保存确认模态框
+            function hideSaveConfirmModal() {
+                document.querySelector('#save-confirm-modal').classList.add('hidden');
+            }
+            
+            // 放弃更改并离开
+            document.querySelector('#discard-changes').addEventListener('click', function() {
+                hideSaveConfirmModal();
+                window.location.href = 'P-WORKS_LIST.html';
+            });
+            
+            // 保存并离开
+            document.querySelector('#save-and-leave').addEventListener('click', function() {
+                saveWork();
+                hideSaveConfirmModal();
+                window.location.href = 'P-WORKS_LIST.html';
+            });
+            
+            // 保存作品
+            function saveWork() {
+                const title = document.querySelector('#work-title').value.trim();
+                const author = document.querySelector('#work-author').value.trim();
+                const content = document.querySelector('#text-editor').innerHTML;
+                
+                if (!title) {
+                    showToast('请输入作品标题');
+                    return;
+                }
+                
+                if (!author) {
+                    showToast('请输入作者名称');
+                    return;
+                }
+                
+                // 模拟保存过程
+                console.log('保存作品:', { workId, title, author, content });
+                
+                hasUnsavedChanges = false;
+                showToast('作品保存成功');
+            }
+            
+            // 监听文本变化
+            const editableElements = [
+                document.querySelector('#work-title'),
+                document.querySelector('#work-author'),
+                document.querySelector('#text-editor')
+            ];
+            
+            editableElements.forEach(element => {
+                element.addEventListener('input', function() {
+                    hasUnsavedChanges = true;
+                    updateCharCount();
+                });
+            });
+            
+            // 更新字数统计
+            function updateCharCount() {
+                const content = document.querySelector('#text-editor').textContent || '';
+                const charCount = content.length;
+                document.querySelector('#char-count').textContent = `字数：${charCount}`;
+            }
+            
+            // 显示提示消息
+            function showToast(message) {
+                // 创建提示元素
+                const toast = document.createElement('div');
+                toast.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-text-primary text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300';
+                toast.textContent = message;
+                
+                document.body.appendChild(toast);
+                
+                // 显示动画
+                setTimeout(() => {
+                    toast.style.opacity = '1';
+                    toast.style.transform = 'translate(-50%, 0)';
+                }, 100);
+                
+                // 3秒后移除
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translate(-50%, -20px)';
+                    setTimeout(() => {
+                        document.body.removeChild(toast);
+                    }, 300);
+                }, 3000);
+            }
+            
+            // 初始化字数统计
+            updateCharCount();
+            
+            // 自动保存功能（每30秒自动保存一次）
+            setInterval(() => {
+                if (hasUnsavedChanges) {
+                    console.log('自动保存草稿...');
+                    // 这里可以实现自动保存逻辑
+                }
+            }, 30000);
+            
+            // 全屏创作模式
+            fullscreenBtn.addEventListener('click', function() {
+                // 创建全屏创作模态框
+                const fullscreenModal = document.createElement('div');
+                fullscreenModal.id = 'fullscreen-editor-modal';
+                fullscreenModal.className = 'fixed inset-0 bg-white z-50 flex flex-col';
+                
+                // 获取当前编辑器内容
+                const textEditor = document.querySelector('#text-editor');
+                const plainText = textEditor.textContent;
+                
+                fullscreenModal.innerHTML = `
+                    <div class="bg-gradient-to-r from-primary to-secondary text-white p-4 flex items-center justify-between">
+                        <h2 class="text-lg font-bold">沉浸式创作</h2>
+                        <button id="exit-fullscreen-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                    <div class="flex-1 p-6 overflow-auto">
+                        <textarea id="fullscreen-story-content" 
+                                  class="w-full h-full text-lg px-4 py-3 border-none resize-none focus:outline-none"
+                                  placeholder="开始你的创作...">${plainText}</textarea>
+                    </div>
+                    <div class="bg-gray-100 p-4 flex justify-between items-center">
+                        <div class="text-sm text-text-secondary">
+                            字数：<span id="fullscreen-char-count">${plainText.length}</span>
+                        </div>
+                        <button id="save-fullscreen-btn" class="btn-primary text-white px-6 py-2 rounded-lg font-medium">
+                            保存并退出
+                        </button>
+                    </div>
+                `;
+                
+                document.body.appendChild(fullscreenModal);
+                
+                // 获取全屏模式下的元素
+                const exitFullscreenBtn = document.querySelector('#exit-fullscreen-btn');
+                const fullscreenStoryContent = document.querySelector('#fullscreen-story-content');
+                const fullscreenCharCount = document.querySelector('#fullscreen-char-count');
+                const saveFullscreenBtn = document.querySelector('#save-fullscreen-btn');
+                
+                // 自动聚焦到文本框
+                fullscreenStoryContent.focus();
+                
+                // 更新字数统计
+                fullscreenStoryContent.addEventListener('input', function() {
+                    fullscreenCharCount.textContent = this.value.length;
+                });
+                
+                // 退出全屏模式
+                function exitFullscreen() {
+                    document.body.removeChild(fullscreenModal);
+                }
+                
+                // 保存并退出全屏模式
+                saveFullscreenBtn.addEventListener('click', function() {
+                    // 在实际应用中，这里需要处理HTML内容和插图的保存逻辑
+                    // 这里简化处理，只保存纯文本内容
+                    textEditor.innerHTML = `<p>${fullscreenStoryContent.value.replace(/\n/g, '</p><p>')}</p>`;
+                    updateCharCount();
+                    hasUnsavedChanges = true;
+                    exitFullscreen();
+                    showToast('内容已保存');
+                });
+                
+                // 点击关闭按钮退出全屏模式
+                exitFullscreenBtn.addEventListener('click', exitFullscreen);
+                
+                // 按ESC键退出全屏模式
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        exitFullscreen();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

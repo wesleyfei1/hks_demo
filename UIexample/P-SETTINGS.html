@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画叙 - 设置</title>
+    <script src="https://unpkg.byted-static.com/coze/space_ppt_lib/1.0.3-alpha.12/lib/tailwindcss.js"></script>
+    <script src="https://unpkg.byted-static.com/fortawesome/fontawesome-free/6.7.2/js/all.min.js" data-auto-replace-svg="nest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1',
+                        secondary: '#8b5cf6',
+                        tertiary: '#06b6d4',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        info: '#3b82f6',
+                        'text-primary': '#1f2937',
+                        'text-secondary': '#6b7280',
+                        'bg-light': '#f8fafc',
+                        'border-light': '#e5e7eb'
+                    },
+                    fontFamily: {
+                        'sans': ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+                        'card-hover': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .safe-top {
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .safe-bottom {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .setting-item-hover:hover {
+            background-color: #f9fafb;
+            transform: translateX(4px);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .setting-item-hover:active {
+            transform: translateX(2px);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.2s ease-in-out;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5855eb 0%, #7c3aed 100%);
+            transform: translateY(-1px);
+        }
+        
+        .header-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        }
+    </style>
+</head>
+<body class="bg-bg-light font-sans">
+    <!-- 状态栏 -->
+    <div id="status-bar" class="bg-white safe-top">
+        <div class="flex justify-between items-center px-4 py-2 text-sm font-medium text-gray-900">
+            <span>9:41</span>
+            <div class="flex items-center space-x-1">
+                <i class="fas fa-signal text-xs"></i>
+                <i class="fas fa-wifi text-xs"></i>
+                <i class="fas fa-battery-three-quarters text-xs"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主容器 -->
+    <div id="main-container" class="min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header id="top-header" class="header-gradient text-white sticky top-0 z-30 shadow-md">
+            <div class="flex items-center px-4 py-4">
+                <button id="back-btn" class="p-2 rounded-full hover:bg-white/20 transition-colors mr-3">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </button>
+                
+                <div id="page-title" class="flex items-center space-x-3 flex-1">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        <i class="fas fa-cog text-primary text-lg"></i>
+                    </div>
+                    <h1 class="text-xl font-bold">设置</h1>
+                </div>
+            </div>
+        </header>
+
+        <!-- 设置内容区域 -->
+        <main id="settings-main" class="px-4 py-6">
+            <!-- 用户信息卡片 -->
+            <div id="user-info-card" class="bg-white rounded-2xl shadow-card p-6 mb-6 border border-border-light">
+                <div class="flex items-center">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white mr-4 flex-shrink-0">
+                        <i class="fas fa-user text-2xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-text-primary mb-1">画叙创作者</h3>
+                        <p class="text-sm text-text-secondary">欢迎使用画叙，开始你的创作之旅</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-text-secondary"></i>
+                </div>
+            </div>
+
+            <!-- 设置选项列表 -->
+            <div id="settings-list" class="space-y-4">
+                <!-- 账户设置 -->
+                <div id="account-settings-item" class="bg-white rounded-2xl shadow-card setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between p-5">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600 mr-4 flex-shrink-0">
+                                <i class="fas fa-user-cog text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-text-primary">账户设置</h3>
+                                <p class="text-sm text-text-secondary">管理个人信息和账户安全</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 通知设置 -->
+                <div id="notification-settings-item" class="bg-white rounded-2xl shadow-card setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between p-5">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mr-4 flex-shrink-0">
+                                <i class="fas fa-bell text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-text-primary">通知设置</h3>
+                                <p class="text-sm text-text-secondary">管理应用通知和消息推送</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+
+                <!-- 关于我们 -->
+                <div id="about-us-item" class="bg-white rounded-2xl shadow-card setting-item-hover cursor-pointer">
+                    <div class="flex items-center justify-between p-5">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600 mr-4 flex-shrink-0">
+                                <i class="fas fa-info-circle text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold text-text-primary">关于我们</h3>
+                                <p class="text-sm text-text-secondary">应用版本信息和法律条款</p>
+                            </div>
+                        </div>
+                        <i class="fas fa-chevron-right text-text-secondary"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 底部信息区域 -->
+            <div id="bottom-info" class="mt-12 text-center">
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-3xl p-6 border border-purple-100">
+                    <div class="w-16 h-16 bg-gradient-to-br from-primary to-secondary rounded-full flex items-center justify-center text-white mx-auto mb-4">
+                        <i class="fas fa-heart text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-text-primary mb-2">感谢使用画叙</h3>
+                    <p class="text-sm text-text-secondary mb-4">让文字插上想象的翅膀，创造无限可能</p>
+                    <div class="text-xs text-text-secondary">
+                        <p>版本 1.0.0</p>
+                        <p class="mt-1">© 2024 画叙团队 版权所有</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 返回按钮点击事件
+            document.querySelector('#back-btn').addEventListener('click', function() {
+                window.location.href = 'P-WORKS_LIST.html';
+            });
+
+            // 账户设置点击事件
+            document.querySelector('#account-settings-item').addEventListener('click', function() {
+                window.location.href = 'P-ACCOUNT_SETTINGS.html';
+            });
+
+            // 通知设置点击事件
+            document.querySelector('#notification-settings-item').addEventListener('click', function() {
+                window.location.href = 'P-NOTIFICATION_SETTINGS.html';
+            });
+
+            // 关于我们点击事件
+            document.querySelector('#about-us-item').addEventListener('click', function() {
+                window.location.href = 'P-ABOUT_US.html';
+            });
+
+            // 用户信息卡片点击事件（可选，跳转到账户设置）
+            document.querySelector('#user-info-card').addEventListener('click', function() {
+                window.location.href = 'P-ACCOUNT_SETTINGS.html';
+            });
+        });
+    </script>
+</body>
+</html>
